@@ -1,1 +1,1 @@
-# CS171_Eight_Puzzle
+# CS170_Eight_Puzzle
