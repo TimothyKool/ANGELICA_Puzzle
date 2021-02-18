@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <queue>
+#include <unordered_set>
 #include <chrono>
 #include <sstream>
 
@@ -17,6 +18,9 @@ class node {
         node();
         node(vector<vector<int>>);
         node(vector<vector<int>>, int, int);
+        // bool operator<(const node& n1, const node& n2) const {
+        //     return n1.fCost > n2.fCost;
+        // }
 };
 
 node::node() {
@@ -57,15 +61,15 @@ node::node(vector<vector<int>> currBoard, int fCost, int depth) {
 }
 
 bool operator<(const node& n1, const node& n2) {
-    return n1.fCost < n2.fCost;
+    return n1.fCost > n2.fCost;
 }
 
 class puzzleSolver {
     private:
         vector<vector<int>> gameBoard {
-            {1, 2, 3},
-            {4, 5, 6},
-            {0, 7, 8}
+            {1, 3, 6},
+            {5, 0, 2},
+            {4, 7, 8}
         };
         int customBoard = 0;
         int algorithm = 0;
@@ -79,6 +83,7 @@ class puzzleSolver {
         void algorithmChoice();
         bool generalSearch();
         int heuristic();
+        string matrixToString(const vector<vector<int>>&);
         bool isSolution(const vector<vector<int>>&);
         void showGameBoard(const vector<vector<int>>&);
 };
@@ -129,6 +134,7 @@ void puzzleSolver::algorithmChoice() {
 bool puzzleSolver::generalSearch() {
     auto start = high_resolution_clock::now();
     priority_queue<node> nodes;
+    unordered_set<string> boardSet;
     node firstNode(gameBoard);
     int expandedNodes = 0;
     int maxQueueSize = 0;
@@ -138,6 +144,9 @@ bool puzzleSolver::generalSearch() {
     while(!nodes.empty()) {
         node currNode = nodes.top();
         nodes.pop();
+
+        cout << "Current matrix with cost " << currNode.fCost << endl;
+        showGameBoard(currNode.boardState);
         
         if(isSolution(currNode.boardState)) {
             cout << "Goal!" << endl;
@@ -154,11 +163,15 @@ bool puzzleSolver::generalSearch() {
             int column = temp.zeroColumn;
             temp.boardState[row][column] = temp.boardState[row-1][column];
             temp.boardState[row-1][column] = 0;
-            temp.zeroRow = row - 1;
-            temp.depth += 1;
-            temp.fCost = 1 + heuristic();
-            nodes.push(temp);
-            expandedNodes++;
+            string matrixString = matrixToString(temp.boardState);
+            if(boardSet.find(matrixString) == boardSet.end()) {
+                boardSet.insert(matrixString);
+                temp.zeroRow = row - 1;
+                temp.depth += 1;
+                temp.fCost += 1 + heuristic();
+                nodes.push(temp);
+                expandedNodes++;
+            }
         }
         // Move right
         if(currNode.zeroColumn < 2) {
@@ -167,11 +180,14 @@ bool puzzleSolver::generalSearch() {
             int column = temp.zeroColumn;
             temp.boardState[row][column] = temp.boardState[row][column+1];
             temp.boardState[row][column+1] = 0;
-            temp.zeroColumn = column + 1;
-            temp.depth += 1;
-            temp.fCost = 1 + heuristic();
-            nodes.push(temp);
-            expandedNodes++;
+            string matrixString = matrixToString(temp.boardState);
+            if(boardSet.find(matrixString) == boardSet.end()) {
+                temp.zeroColumn = column + 1;
+                temp.depth += 1;
+                temp.fCost += 1 + heuristic();
+                nodes.push(temp);
+                expandedNodes++;
+            }
         }
         // Move down
         if(currNode.zeroRow < 2) {
@@ -180,11 +196,14 @@ bool puzzleSolver::generalSearch() {
             int column = temp.zeroColumn;
             temp.boardState[row][column] = temp.boardState[row+1][column];
             temp.boardState[row+1][column] = 0;
-            temp.zeroRow = row + 1;
-            temp.depth += 1;
-            temp.fCost = 1 + heuristic();
-            nodes.push(temp);
-            expandedNodes++;
+            string matrixString = matrixToString(temp.boardState);
+            if(boardSet.find(matrixString) == boardSet.end()) {
+                temp.zeroRow = row + 1;
+                temp.depth += 1;
+                temp.fCost += 1 + heuristic();
+                nodes.push(temp);
+                expandedNodes++;
+            }
         }
         // Move left
         if(currNode.zeroColumn > 0) {
@@ -193,11 +212,14 @@ bool puzzleSolver::generalSearch() {
             int column = temp.zeroColumn;
             temp.boardState[row][column] = temp.boardState[row][column-1];
             temp.boardState[row][column-1] = 0;
-            temp.zeroColumn = column - 1;
-            temp.depth += 1;
-            temp.fCost = 1 + heuristic();
-            nodes.push(temp);
-            expandedNodes++;
+            string matrixString = matrixToString(temp.boardState);
+            if(boardSet.find(matrixString) == boardSet.end()) {
+                temp.zeroColumn = column - 1;
+                temp.depth += 1;
+                temp.fCost += 1 + heuristic();
+                nodes.push(temp);
+                expandedNodes++;
+            }
         }
 
         if(nodes.size() > maxQueueSize) {
@@ -224,6 +246,16 @@ int puzzleSolver::heuristic() {
     return 0;
 }
 
+string puzzleSolver::matrixToString(const vector<vector<int>>& board) {
+    string nums = "";
+    for(int i = 0; i < board.size(); i++) {
+        for(int j = 0; j < board[0].size(); j++) {
+            nums.push_back('0' + board[i][j]);
+        }
+    }
+    return nums;
+}
+
 bool puzzleSolver::isSolution(const vector<vector<int>>& currBoard) {
     const vector<vector<int>> solution {
         {1, 2, 3},
@@ -246,9 +278,9 @@ void puzzleSolver::driverFunction() {
     promptBoardType();
     initializeBoard();
     algorithmChoice();
-    generalSearch();
-
-    // showGameBoard();
+    if(!generalSearch()) {
+        cout << "Search failed :(" << endl;
+    }
 }
 
 
