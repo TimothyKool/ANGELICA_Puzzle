@@ -82,7 +82,8 @@ class puzzleSolver {
         void initializeRowHelper(const string& input, int row);
         void algorithmChoice();
         bool generalSearch();
-        int heuristic();
+        int heuristic(const vector<vector<int>>&);
+        int numMisplacedTiles(const vector<vector<int>>&);
         string matrixToString(const vector<vector<int>>&);
         bool isSolution(const vector<vector<int>>&);
         void showGameBoard(const vector<vector<int>>&);
@@ -168,7 +169,7 @@ bool puzzleSolver::generalSearch() {
                 boardSet.insert(matrixString);
                 temp.zeroRow = row - 1;
                 temp.depth += 1;
-                temp.fCost += 1 + heuristic();
+                temp.fCost += 1 + heuristic(temp.boardState);
                 nodes.push(temp);
                 expandedNodes++;
             }
@@ -184,7 +185,7 @@ bool puzzleSolver::generalSearch() {
             if(boardSet.find(matrixString) == boardSet.end()) {
                 temp.zeroColumn = column + 1;
                 temp.depth += 1;
-                temp.fCost += 1 + heuristic();
+                temp.fCost += 1 + heuristic(temp.boardState);
                 nodes.push(temp);
                 expandedNodes++;
             }
@@ -200,7 +201,7 @@ bool puzzleSolver::generalSearch() {
             if(boardSet.find(matrixString) == boardSet.end()) {
                 temp.zeroRow = row + 1;
                 temp.depth += 1;
-                temp.fCost += 1 + heuristic();
+                temp.fCost += 1 + heuristic(temp.boardState);
                 nodes.push(temp);
                 expandedNodes++;
             }
@@ -216,7 +217,7 @@ bool puzzleSolver::generalSearch() {
             if(boardSet.find(matrixString) == boardSet.end()) {
                 temp.zeroColumn = column - 1;
                 temp.depth += 1;
-                temp.fCost += 1 + heuristic();
+                temp.fCost += 1 + heuristic(temp.boardState);
                 nodes.push(temp);
                 expandedNodes++;
             }
@@ -235,15 +236,31 @@ bool puzzleSolver::generalSearch() {
     return false;
 }
 
-int puzzleSolver::heuristic() {
+int puzzleSolver::heuristic(const vector<vector<int>>& board) {
     if(algorithm == 2) {
-        // calculate # of misplaced tiles
+        return numMisplacedTiles(board);
     }
     else if(algorithm == 3) {
         // calculate manhattan distance
     }
     // for uniform cost search
     return 0;
+}
+
+int puzzleSolver::numMisplacedTiles(const vector<vector<int>>& board) {
+    int correctNum = 1;
+    int tiles = 0;
+
+    for(int i = 0; i < board.size(); i++) {
+        for(int j = 0; j < board[0].size(); j++) {
+            if(board[i][j] != correctNum) {
+                tiles++;
+            }
+            correctNum++;
+        }
+    }
+
+    return tiles;
 }
 
 string puzzleSolver::matrixToString(const vector<vector<int>>& board) {
