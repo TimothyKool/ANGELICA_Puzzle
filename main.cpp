@@ -4,6 +4,7 @@
 #include <unordered_set>
 #include <chrono>
 #include <sstream>
+#include <cmath>
 
 using namespace std;
 using namespace std::chrono; 
@@ -84,6 +85,7 @@ class puzzleSolver {
         bool generalSearch();
         int heuristic(const vector<vector<int>>&);
         int numMisplacedTiles(const vector<vector<int>>&);
+        int manhattanDistance(const vector<vector<int>>&);
         string matrixToString(const vector<vector<int>>&);
         bool isSolution(const vector<vector<int>>&);
         void showGameBoard(const vector<vector<int>>&);
@@ -241,7 +243,7 @@ int puzzleSolver::heuristic(const vector<vector<int>>& board) {
         return numMisplacedTiles(board);
     }
     else if(algorithm == 3) {
-        // calculate manhattan distance
+        return manhattanDistance(board);
     }
     // for uniform cost search
     return 0;
@@ -259,8 +261,32 @@ int puzzleSolver::numMisplacedTiles(const vector<vector<int>>& board) {
             correctNum++;
         }
     }
-
     return tiles;
+}
+
+int puzzleSolver::manhattanDistance(const vector<vector<int>>& board) {
+    int distance = 0;
+    int num = 0;
+    vector<vector<int>> correctCoord {
+        {0, 0},
+        {0, 1},
+        {0, 2},
+        {1, 0},
+        {1, 1},
+        {1, 2},
+        {2, 0},
+        {2, 1}
+    };
+
+    for(int i = 0; i < board.size(); i++) {
+        for(int j = 0; j < board[0].size(); j++) {
+            num = board[i][j];
+            if(num != 0) {
+                distance += abs(i - correctCoord[num-1][0]) + abs(j - correctCoord[num-1][1]);
+            }
+        }
+    }
+    return distance;
 }
 
 string puzzleSolver::matrixToString(const vector<vector<int>>& board) {
