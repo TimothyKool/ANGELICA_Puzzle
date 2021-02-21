@@ -230,7 +230,7 @@ bool puzzleSolver::generalSearch() {
         }
         auto stop = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>(stop - start);
-        if(duration.count() > 6e+7) {
+        if(duration.count() > 3e+8) {
             return false;
         }
     }
@@ -255,7 +255,7 @@ int puzzleSolver::numMisplacedTiles(const vector<vector<int>>& board) {
 
     for(int i = 0; i < board.size(); i++) {
         for(int j = 0; j < board[0].size(); j++) {
-            if(board[i][j] != correctNum) {
+            if(board[i][j] != 0 && board[i][j] != correctNum) {
                 tiles++;
             }
             correctNum++;
