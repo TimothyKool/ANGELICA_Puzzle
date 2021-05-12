@@ -1,0 +1,8 @@
+{
+    "jupyter.jupyterServerType": "local",
+    "files.associations": {
+        "*.cpp": "cpp",
+        "random": "cpp",
+        "ratio": "cpp"
+    }
+}

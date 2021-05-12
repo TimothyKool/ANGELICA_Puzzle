@@ -2,6 +2,7 @@
 #include <vector>
 #include <queue>
 #include <unordered_set>
+#include <unordered_map>
 #include <chrono>
 #include <sstream>
 #include <cmath>
@@ -11,17 +12,14 @@ using namespace std::chrono;
 
 class node {
     public:
-        vector<vector<int>> boardState;
+        vector<vector<char>> boardState;
         int fCost;
         int depth;
         int zeroRow;
         int zeroColumn;
         node();
-        node(vector<vector<int>>);
-        node(vector<vector<int>>, int, int);
-        // bool operator<(const node& n1, const node& n2) const {
-        //     return n1.fCost > n2.fCost;
-        // }
+        node(vector<vector<char>>);
+        node(vector<vector<char>>, int, int);
 };
 
 node::node() {
@@ -31,11 +29,11 @@ node::node() {
     zeroColumn = 0;
 }
 
-node::node(vector<vector<int>> currBoard) {
+node::node(vector<vector<char>> currBoard) {
     boardState = currBoard;
     for(int i = 0; i < boardState.size(); i++) {
         for(int j = 0; j < boardState.size(); j++) {
-            if(boardState[i][j] == 0) {
+            if(boardState[i][j] == '0') {
                 zeroRow = i;
                 zeroColumn = j;
                 break;
@@ -46,11 +44,11 @@ node::node(vector<vector<int>> currBoard) {
     depth = 0;
 }
 
-node::node(vector<vector<int>> currBoard, int fCost, int depth) {
+node::node(vector<vector<char>> currBoard, int fCost, int depth) {
     boardState = currBoard;
     for(int i = 0; i < boardState.size(); i++) {
         for(int j = 0; j < boardState.size(); j++) {
-            if(boardState[i][j] == 0) {
+            if(boardState[i][j] == '0') {
                 zeroRow = i;
                 zeroColumn = j;
                 break;
@@ -67,10 +65,10 @@ bool operator<(const node& n1, const node& n2) {
 
 class puzzleSolver {
     private:
-        vector<vector<int>> gameBoard {
-            {1, 3, 6},
-            {5, 0, 2},
-            {4, 7, 8}
+        vector<vector<char>> gameBoard {
+            {'E', 'A', 'G'},
+            {'N', '0', 'L'},
+            {'C', 'Z', 'I'}
         };
         int customBoard = 0;
         int algorithm = 0;
@@ -80,19 +78,19 @@ class puzzleSolver {
         void driverFunction();
         void promptBoardType();
         void initializeBoard();
-        void initializeRowHelper(const string& input, int row);
+        void initializeRowHelper(const string& input1, const string& input2, const string& input3);
         void algorithmChoice();
         bool generalSearch();
-        int heuristic(const vector<vector<int>>&);
-        int numMisplacedTiles(const vector<vector<int>>&);
-        int manhattanDistance(const vector<vector<int>>&);
-        string matrixToString(const vector<vector<int>>&);
-        bool isSolution(const vector<vector<int>>&);
-        void showGameBoard(const vector<vector<int>>&);
+        int heuristic(const vector<vector<char>>&);
+        int numMisplacedTiles(const vector<vector<char>>&);
+        int manhattanDistance(const vector<vector<char>>&);
+        string matrixToString(const vector<vector<char>>&);
+        bool isSolution(const vector<vector<char>>&);
+        void showGameBoard(const vector<vector<char>>&);
 };
 
 void puzzleSolver::promptBoardType() {
-    cout << "Welcome to Timothy Koo's 8-puzzle problem solver." << endl;
+    cout << "Welcome to Timothy Koo's Angelica-puzzle problem solver." << endl;
     cout << "Type \'1\' to use a default puzzle, or \'2\' to enter your own puzzle." << endl;
     cin >> customBoard;
 }
@@ -101,28 +99,64 @@ void puzzleSolver::initializeBoard() {
     // Custom board
     if(customBoard == 2) {
         // Ask user for board elements (does not validate input)
-        string input = "";
+        string row1 = "";
+        string row2 = "";
+        string row3 = "";
         cout << "Enter your puzzle, use a zero to represent the blank" << endl;
-        cout << "Enter the first row, use space or tabs between numbers" << endl;
-        getline(cin, input);
-        getline(cin, input);
-        initializeRowHelper(input, 0);
-        cout << "Enter the second row, use space or tabs between numbers" << endl;
-        getline(cin, input);
-        initializeRowHelper(input, 1);
-        cout << "Enter the third row, use space or tabs between numbers" << endl;
-        getline(cin, input);
-        initializeRowHelper(input, 2);
+        cout << "Enter the first row, use space or tabs between letters" << endl;
+        getline(cin, row1);
+        getline(cin, row1);
+        cout << "Enter the second row, use space or tabs between letters" << endl;
+        getline(cin, row2);
+        cout << "Enter the third row, use space or tabs between letters" << endl;
+        getline(cin, row3);
+        initializeRowHelper(row1, row2, row3);
     }
     // Otherwise, default board and do nothing
 }
 
-void puzzleSolver::initializeRowHelper(const string& input, int row) {
-    stringstream rowElements(input);
-    int num = 0;
+void puzzleSolver::initializeRowHelper(const string& input1, const string& input2, const string& input3) {
+    stringstream rowElements1(input1);
+    stringstream rowElements2(input2);
+    stringstream rowElements3(input3);
+
+    char letter;
+    bool seenA = false;
     int i = 0;
-    while(rowElements >> num) {
-        gameBoard[row].at(i++) = num;
+    while(rowElements1 >> letter) {
+        if(seenA && letter == 'A') {
+            gameBoard[0].at(i++) = 'Z';
+        }
+        else {
+            if(letter == 'A') {
+                seenA = true;
+            }
+            gameBoard[0].at(i++) = letter;
+        }
+    }
+    i = 0;
+    while(rowElements2 >> letter) {
+        if(seenA && letter == 'A') {
+            gameBoard[1].at(i++) = 'Z';
+        }
+        else {
+            if(letter == 'A') {
+                seenA = true;
+            }
+            gameBoard[1].at(i++) = letter;
+        }
+    }
+    i = 0;
+    while(rowElements3 >> letter) {
+        if(seenA && letter == 'A') {
+            gameBoard[2].at(i++) = 'Z';
+        }
+        else {
+            if(letter == 'A') {
+                seenA = true;
+            }
+            gameBoard[2].at(i++) = letter;
+        }
     }
 }
 
@@ -165,7 +199,7 @@ bool puzzleSolver::generalSearch() {
             int row = temp.zeroRow;
             int column = temp.zeroColumn;
             temp.boardState[row][column] = temp.boardState[row-1][column];
-            temp.boardState[row-1][column] = 0;
+            temp.boardState[row-1][column] = '0';
             string matrixString = matrixToString(temp.boardState);
             if(boardSet.find(matrixString) == boardSet.end()) {
                 boardSet.insert(matrixString);
@@ -182,7 +216,7 @@ bool puzzleSolver::generalSearch() {
             int row = temp.zeroRow;
             int column = temp.zeroColumn;
             temp.boardState[row][column] = temp.boardState[row][column+1];
-            temp.boardState[row][column+1] = 0;
+            temp.boardState[row][column+1] = '0';
             string matrixString = matrixToString(temp.boardState);
             if(boardSet.find(matrixString) == boardSet.end()) {
                 temp.zeroColumn = column + 1;
@@ -198,7 +232,7 @@ bool puzzleSolver::generalSearch() {
             int row = temp.zeroRow;
             int column = temp.zeroColumn;
             temp.boardState[row][column] = temp.boardState[row+1][column];
-            temp.boardState[row+1][column] = 0;
+            temp.boardState[row+1][column] = '0';
             string matrixString = matrixToString(temp.boardState);
             if(boardSet.find(matrixString) == boardSet.end()) {
                 temp.zeroRow = row + 1;
@@ -214,7 +248,7 @@ bool puzzleSolver::generalSearch() {
             int row = temp.zeroRow;
             int column = temp.zeroColumn;
             temp.boardState[row][column] = temp.boardState[row][column-1];
-            temp.boardState[row][column-1] = 0;
+            temp.boardState[row][column-1] = '0';
             string matrixString = matrixToString(temp.boardState);
             if(boardSet.find(matrixString) == boardSet.end()) {
                 temp.zeroColumn = column - 1;
@@ -224,7 +258,6 @@ bool puzzleSolver::generalSearch() {
                 expandedNodes++;
             }
         }
-
         if(nodes.size() > maxQueueSize) {
             maxQueueSize = nodes.size();
         }
@@ -238,7 +271,7 @@ bool puzzleSolver::generalSearch() {
     return false;
 }
 
-int puzzleSolver::heuristic(const vector<vector<int>>& board) {
+int puzzleSolver::heuristic(const vector<vector<char>>& board) {
     if(algorithm == 2) {
         return numMisplacedTiles(board);
     }
@@ -249,69 +282,85 @@ int puzzleSolver::heuristic(const vector<vector<int>>& board) {
     return 0;
 }
 
-int puzzleSolver::numMisplacedTiles(const vector<vector<int>>& board) {
-    int correctNum = 1;
+int puzzleSolver::numMisplacedTiles(const vector<vector<char>>& board) {
     int tiles = 0;
+    const vector<vector<char>> solution {
+        {'A', 'N', 'G'},
+        {'E', 'L', 'I'},
+        {'C', 'Z', '0'}
+    };
 
     for(int i = 0; i < board.size(); i++) {
         for(int j = 0; j < board[0].size(); j++) {
-            if(board[i][j] != 0 && board[i][j] != correctNum) {
+            if(board[i][j] != '0' && board[i][j] != solution[i][j]) {
                 tiles++;
             }
-            correctNum++;
         }
     }
     return tiles;
 }
 
-int puzzleSolver::manhattanDistance(const vector<vector<int>>& board) {
+int puzzleSolver::manhattanDistance(const vector<vector<char>>& board) {
     int distance = 0;
-    int num = 0;
-    vector<vector<int>> correctCoord {
-        {0, 0},
-        {0, 1},
-        {0, 2},
-        {1, 0},
-        {1, 1},
-        {1, 2},
-        {2, 0},
-        {2, 1}
-    };
+    char letter;
+
+    unordered_map<char, pair<int,int>> correctCoord;
+    pair<int,int> A(0, 0);
+    correctCoord['A'] = A;
+    pair<int,int> N(0, 1);
+    correctCoord['N'] = N;
+    pair<int,int> G(0, 2);
+    correctCoord['G'] = G;
+    pair<int,int> E(1, 0);
+    correctCoord['E'] = E;
+    pair<int,int> L(1, 1);
+    correctCoord['L'] = L;
+    pair<int,int> I(1, 2);
+    correctCoord['I'] = I;
+    pair<int,int> C(2, 0);
+    correctCoord['C'] = C;
+    pair<int,int> Z(2, 1);
+    correctCoord['Z'] = Z;
 
     for(int i = 0; i < board.size(); i++) {
         for(int j = 0; j < board[0].size(); j++) {
-            num = board[i][j];
-            if(num != 0) {
-                distance += abs(i - correctCoord[num-1][0]) + abs(j - correctCoord[num-1][1]);
+            letter = board[i][j];
+            if(letter != '0') {
+                distance += abs(i - correctCoord[letter].first) + abs(j - correctCoord[letter].second);
             }
         }
     }
     return distance;
 }
 
-string puzzleSolver::matrixToString(const vector<vector<int>>& board) {
+string puzzleSolver::matrixToString(const vector<vector<char>>& board) {
     string nums = "";
     for(int i = 0; i < board.size(); i++) {
         for(int j = 0; j < board[0].size(); j++) {
-            nums.push_back('0' + board[i][j]);
+            nums.push_back(board[i][j]);
         }
     }
     return nums;
 }
 
-bool puzzleSolver::isSolution(const vector<vector<int>>& currBoard) {
-    const vector<vector<int>> solution {
-        {1, 2, 3},
-        {4, 5, 6},
-        {7, 8, 0}
+bool puzzleSolver::isSolution(const vector<vector<char>>& currBoard) {
+    const vector<vector<char>> solution {
+        {'A', 'N', 'G'},
+        {'E', 'L', 'I'},
+        {'C', 'Z', '0'}
     };
     return (currBoard == solution ? true : false);
 }
 
-void puzzleSolver::showGameBoard(const vector<vector<int>>& board) {
+void puzzleSolver::showGameBoard(const vector<vector<char>>& board) {
     for(int i = 0; i < board.size(); i++) {
         for(int j = 0; j < board[0].size(); j++) {
-            cout << board[i][j] << " ";
+            if(board[i][j] == 'Z') {
+                cout << 'A' << " ";
+            }
+            else {
+                cout << board[i][j] << " ";
+            }
         }
         cout << endl;
     }
